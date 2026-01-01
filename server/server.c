@@ -42,7 +42,7 @@ int start_session(int socketfd)
                 buffer[bytes_read] = '\0';
             }
 
-            printf("Client response: %s\n", buffer);
+            printf("Client: %s", buffer);
         }
     }
 
@@ -59,7 +59,7 @@ int start_server()
     int socketfd;
     socketfd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
     if(socketfd == -1) {
-        printf("Error creating passive socket\n");
+        perror("Error creating passive socket\n");
         return -1;
     }
 
@@ -69,16 +69,22 @@ int start_server()
     server_addr.sin_port = htons(PORT_NUM);
     server_addr.sin_addr.s_addr = INADDR_ANY;
 
+    // allow immediate port reusability
+    int opt = 1;
+    if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        perror("Error setting port reusability\n");
+    }
+
     int bind_status =
         bind(socketfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
     if(bind_status == -1) {
-        printf("Error binding passive socket to IP and port\n");
+        perror("Error binding passive socket to IP and port\n");
         return -1;
     }
 
     listen(socketfd, BACKLOG_LEN);
-    printf("Server start\n\n");
+    printf("Server initiated\n\n");
     return socketfd;
 }
 
@@ -92,17 +98,17 @@ int main()
     // start server
     int passive_socketfd = start_server();
     if(passive_socketfd == -1) {
-        printf("Error starting server\n");
+        printf("Could not start server\n");
         return -1;
     }
 
     // wait for clients
     int socketfd = accept(passive_socketfd, NULL, NULL);
     if(socketfd == -1) {
-        printf("Error accepting connection\n");
+        printf("Could not accept connection\n");
         return -1;
     }
-    printf("Client has connected\n");
+    printf("Client has connected\n\n");
 
     // begin session with client
     int session_result = start_session(socketfd);

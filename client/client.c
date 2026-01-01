@@ -43,7 +43,7 @@ int start_session(int socketfd)
                 buffer[bytes_read] = '\0';
             }
 
-            printf("Server response: %s\n", buffer);
+            printf("Server: %s", buffer);
         }
     }
 
@@ -60,7 +60,7 @@ int connect_to_server()
     int socketfd;
     socketfd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
     if(socketfd == -1) {
-        printf("Error creating socket\n");
+        perror("Error creating socket\n");
         return -1;
     }
 
@@ -75,11 +75,11 @@ int connect_to_server()
         connect(socketfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
     if(connect_status == -1) {
-        printf("Error connecting socket to server\n");
+        perror("Error connecting socket to server\n");
         return -1;
     }
 
-    printf("Successfully connected to server\n\n");
+    printf("Connected to server\n\n");
     return socketfd;
 }
 
@@ -88,7 +88,7 @@ int main()
     // connect to server
     int socketfd = connect_to_server();
     if(socketfd == -1) {
-        printf("Error establishing connection with server\n");
+        printf("Could not connect to server\n");
         return -1;
     }
 
