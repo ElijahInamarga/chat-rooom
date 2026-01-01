@@ -80,7 +80,7 @@ int connect_to_server()
     }
 
     printf("Successfully connected to server\n\n");
-    return 0;
+    return socketfd;
 }
 
 int main()
