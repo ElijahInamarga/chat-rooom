@@ -54,8 +54,8 @@ int main()
         if(fds[1].revents & POLLIN) {
             int bytes_read = recv(socketfd, buffer, sizeof(buffer) - 1, 0);
             if(bytes_read == 0) {
-		printf("Server terminated\n");
-		return 0;
+                printf("Server terminated\n");
+                return 0;
             }
 
             if(bytes_read > 0) {

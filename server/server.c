@@ -37,7 +37,7 @@ int main()
     socketfd = accept(passive_socketfd, NULL, NULL);
     if(socketfd == -1) {
         printf("Error accepting connection\n");
-	return -1;
+        return -1;
     }
 
     // stdin and socket
@@ -52,10 +52,10 @@ int main()
         if(fds[0].revents & POLLIN) {
             int bytes_read = read(0, buffer, sizeof(buffer) - 1);
             if(bytes_read == 0) {
-		printf("Client has left\n");
-		return 0;
+                printf("Client has left\n");
+                return 0;
             }
-	    
+
             if(bytes_read > 0) {
                 buffer[bytes_read] = '\0';
             }
