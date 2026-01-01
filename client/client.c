@@ -12,32 +12,8 @@
 #define PORT_NUM       8080
 #define NUM_FDS        2
 
-int main()
+int start_session(int socketfd)
 {
-    int socketfd;
-    socketfd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-    if(socketfd == -1) {
-        printf("Error creating socket\n");
-        return -1;
-    }
-
-    // server info
-    struct sockaddr_in server_addr;
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(PORT_NUM);
-    server_addr.sin_addr.s_addr = inet_addr(SERVER_IP_ADDR);
-
-    int connect_status;
-    connect_status =
-        connect(socketfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
-
-    if(connect_status == -1) {
-        printf("Error connecting socket to server\n");
-        return -1;
-    }
-    
-    printf("Successfully connected to server\n");
-
     // stdin and socket
     struct pollfd fds[NUM_FDS] = {{0, POLLIN, 0}, {socketfd, POLLIN, 0}};
 
@@ -71,7 +47,55 @@ int main()
         }
     }
 
-    close(socketfd);
-
     return 0;
+}
+
+void close_session(int socketfd)
+{
+    close(socketfd);
+}
+
+int connect_to_server()
+{
+    int socketfd;
+    socketfd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+    if(socketfd == -1) {
+        printf("Error creating socket\n");
+        return -1;
+    }
+
+    // server info
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT_NUM);
+    server_addr.sin_addr.s_addr = inet_addr(SERVER_IP_ADDR);
+
+    int connect_status;
+    connect_status =
+        connect(socketfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+
+    if(connect_status == -1) {
+        printf("Error connecting socket to server\n");
+        return -1;
+    }
+
+    printf("Successfully connected to server\n\n");
+    return 0;
+}
+
+int main()
+{
+    // connect to server
+    int socketfd = connect_to_server();
+    if(socketfd == -1) {
+        printf("Error establishing connection with server\n");
+        return -1;
+    }
+
+    // begin session with server
+    int session_result = start_session(socketfd);
+
+    close_session(socketfd);
+
+    return session_result;
 }
