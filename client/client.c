@@ -28,6 +28,12 @@ int start_session(int socketfd)
             if(bytes_read > 0) {
                 buffer[bytes_read] = '\0';
             }
+	    
+	    // ignore empty inputs
+	    if (bytes_read == 1 && (buffer[0] == '\n' || buffer[0] == '\r')) {
+		continue;
+	    }
+
             send(socketfd, buffer, bytes_read, 0);
         }
 

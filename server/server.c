@@ -27,6 +27,12 @@ int start_session(int socketfd)
             if(bytes_read > 0) {
                 buffer[bytes_read] = '\0';
             }
+
+	    // ignore empty inputs
+	    if (bytes_read == 1 && (buffer[0] == '\n' || buffer[0] == '\r')) {
+		continue;
+	    }
+
             send(socketfd, buffer, bytes_read, 0);
         }
 
@@ -71,7 +77,7 @@ int start_server()
 
     // allow immediate port reusability
     int opt = 1;
-    if (setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+    if(setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
         perror("Error setting port reusability\n");
     }
 
