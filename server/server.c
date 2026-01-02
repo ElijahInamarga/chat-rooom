@@ -1,5 +1,6 @@
 #include <netinet/in.h>
 #include <poll.h>
+#include <signal.h>
 #include <stdio.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
@@ -10,6 +11,13 @@
 #define PORT_NUM    8080
 #define BACKLOG_LEN 3
 #define MAX_CLIENTS 3
+
+volatile sig_atomic_t keep_running = 1;
+
+void handle_sigint(int sig)
+{
+    keep_running = 0;
+}
 
 /* only used for singleclient to server interation
  * currently not in use
@@ -74,7 +82,7 @@ int server_sesh(int listener_socketfd)
     fds[0].events = POLLIN;
     fds[0].revents = 0;
 
-    for(;;) {
+    while(keep_running) {
         poll(fds, curr_fds, -1);
 
         for(int i = 0; i < curr_fds; ++i) {
@@ -87,7 +95,7 @@ int server_sesh(int listener_socketfd)
 
             if(fds[i].fd == listener_socketfd) {
                 if(curr_fds >= MAX_CLIENTS) {
-                    printf("Server rejected connection\n");
+                    printf("STATUS: Server rejected connection\n");
 
                     // remove client from OS queue
                     int temp_fd = accept(fds[i].fd, NULL, NULL);
@@ -98,7 +106,7 @@ int server_sesh(int listener_socketfd)
 
                 int socketfd = accept(fds[i].fd, NULL, NULL);
                 if(socketfd == -1) {
-                    perror("Could not accept new client\n");
+                    perror("STATUS: Could not accept new client\n");
                     continue;
                 }
 
@@ -107,14 +115,14 @@ int server_sesh(int listener_socketfd)
                 fds[curr_fds].events = POLLIN;
                 fds[curr_fds].revents = 0;
                 curr_fds++;
-		printf("A client has joined the server\n");
+                printf("STATUS: A client has joined the server\n");
             }
 
             if(fds[i].fd != listener_socketfd) {
                 int bytes_read = recv(fds[i].fd, buffer, sizeof(buffer) - 1, 0);
 
                 if(bytes_read == 0) {
-                    printf("A client has left\n");
+                    printf("STATUS: A client has left the server\n");
                     close(fds[i].fd);
                     fds[i] = fds[curr_fds - 1]; // move clients forward
                     fds[curr_fds - 1].fd = -1;  // invalidate duplicate client
@@ -127,7 +135,7 @@ int server_sesh(int listener_socketfd)
                     buffer[bytes_read] = '\0';
                 }
 
-		printf("Chat: %s", buffer);
+                printf("Chat: %s", buffer);
 
                 // send to all clients
                 // ignore listener socket and sender socket
@@ -148,7 +156,7 @@ int start_server()
     int socketfd;
     socketfd = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
     if(socketfd == -1) {
-        perror("Error creating passive socket\n");
+        perror("STATUS: Error creating passive socket\n");
         return -1;
     }
 
@@ -161,25 +169,26 @@ int start_server()
     // allow immediate port reusability
     int opt = 1;
     if(setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        perror("Error setting port reusability\n");
+        perror("STATUS: Error setting port reusability\n");
     }
 
     int bind_status =
         bind(socketfd, (struct sockaddr *)&server_addr, sizeof(server_addr));
 
     if(bind_status == -1) {
-        perror("Error binding passive socket to IP and port\n");
+        perror("STATUS: Error binding passive socket to IP and port\n");
         return -1;
     }
 
     listen(socketfd, BACKLOG_LEN);
-    printf("Server initiated\n\n");
+    printf("STATUS: Server initiated\n");
     return socketfd;
 }
 
 void close_server(int passive_socketfd)
 {
     close(passive_socketfd);
+    printf("\nSTATUS: Server terminated\n");
 }
 
 int main()
@@ -187,9 +196,11 @@ int main()
     // start server
     int listener_socketfd = start_server();
     if(listener_socketfd == -1) {
-        printf("Could not start server\n");
+        printf("STATUS: Could not start server\n");
         return -1;
     }
+
+    signal(SIGINT, handle_sigint);
 
     // begin session with client
     server_sesh(listener_socketfd);

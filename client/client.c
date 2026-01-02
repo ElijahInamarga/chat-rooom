@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <poll.h>
+#include <signal.h>
 #include <stdio.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
@@ -12,13 +13,20 @@
 #define PORT_NUM       8080
 #define NUM_FDS        2
 
+volatile sig_atomic_t keep_running = 1;
+
+void handle_sigint(int sig)
+{
+    keep_running = 0;
+}
+
 int start_session(int socketfd)
 {
     // stdin and socket
     struct pollfd fds[NUM_FDS] = {{0, POLLIN, 0}, {socketfd, POLLIN, 0}};
 
     // 0b 0000 0000 0000 0001 == data available
-    for(;;) {
+    while(keep_running) {
         poll(fds, NUM_FDS, -1);
         char buffer[BUFFER_SIZE] = {0};
 
@@ -58,6 +66,7 @@ int start_session(int socketfd)
 
 void close_session(int socketfd)
 {
+    printf("\nSTATUS: Disconnected from server\n");
     close(socketfd);
 }
 
@@ -97,6 +106,8 @@ int main()
         printf("STATUS: Could not connect to server\n");
         return -1;
     }
+
+    signal(SIGINT, handle_sigint);
 
     // begin session with server
     int session_result = start_session(socketfd);
