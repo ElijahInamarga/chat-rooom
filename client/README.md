@@ -29,6 +29,6 @@ public IP can be accessed with:
 curl -4 ifconfig.me
 ```
 
-On success, you'll see `STATUS: Connected to server` printed onto the terminal. 
+After entering the correct IP address, on successful connection, you'll see `STATUS: Connected to server` printed onto the terminal. 
 Statements starting with `STATUS: ` are error notifications from the client process. 
 Messages from other clients are shown with `Chat: `. Your own messages are shown with `You: `.
