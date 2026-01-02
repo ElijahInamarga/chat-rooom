@@ -8,11 +8,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define SERVER_IP_ADDR "192.168.0.248"
-#define BUFFER_SIZE    256
-#define PORT_NUM       8080
-#define NUM_FDS        2
+#define BUFFER_SIZE 256
+#define PORT_NUM    8080
+#define NUM_FDS     2
 
+char                  SERVER_IP_ADDR[64] = "";
 volatile sig_atomic_t keep_running = 1;
 
 void handle_sigint(int sig)
@@ -39,10 +39,14 @@ int start_session(int socketfd)
 
             // ignore empty inputs
             if(bytes_read == 1 && (buffer[0] == '\n' || buffer[0] == '\r')) {
+                printf("You: ");
+                fflush(stdout);
                 continue;
             }
 
             send(socketfd, buffer, bytes_read, 0);
+            printf("You: ");
+            fflush(stdout);
         }
 
         // server to client
@@ -57,7 +61,8 @@ int start_session(int socketfd)
                 buffer[bytes_read] = '\0';
             }
 
-            printf("Chat: %s", buffer);
+            printf("\rChat: %sYou: ", buffer);
+            fflush(stdout);
         }
     }
 
@@ -95,11 +100,19 @@ int connect_to_server()
     }
 
     printf("STATUS: Connected to server\n");
+    printf("You: ");
+    fflush(stdout);
     return socketfd;
 }
 
 int main()
 {
+    printf("STATUS: Enter server public IP: ");
+    if(scanf("%63s", SERVER_IP_ADDR) != 1) {
+        printf("STATUS: Invalid input\n");
+        return -1;
+    }
+
     // connect to server
     int socketfd = connect_to_server();
     if(socketfd == -1) {
