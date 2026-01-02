@@ -3,11 +3,11 @@
 #include <poll.h>
 #include <signal.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <string.h>
 
 #define BUFFER_SIZE 256
 #define PORT_NUM    8080
@@ -114,7 +114,7 @@ int main()
         printf("STATUS: Invalid input\n");
         return -1;
     }
-    SERVER_IP_ADDR[strcspn(SERVER_IP_ADDR, "\r\n")] = 0;
+    SERVER_IP_ADDR[strcspn(SERVER_IP_ADDR, "\r\n")] = 0; // remove newline
 
     // connect to server
     int socketfd = connect_to_server();
@@ -123,7 +123,7 @@ int main()
         return -1;
     }
 
-    signal(SIGINT, handle_sigint);
+    signal(SIGINT, handle_sigint); // used for elegant exit
 
     // begin session with server
     int session_result = start_session(socketfd);
