@@ -30,5 +30,5 @@ curl -4 ifconfig.me
 ```
 
 After entering the correct IP address, on successful connection, you'll see `STATUS: Connected to server` printed onto the terminal. 
-Statements starting with `STATUS: ` are error notifications from the client process. 
+Statements starting with `STATUS: ` are vital notifications or errors from the client process. 
 Messages from other clients are shown with `Chat: `. Your own messages are shown with `You: `.
