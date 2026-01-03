@@ -1,5 +1,5 @@
 ## Server Process
-This application is designed have a single server manage a maximum of 5 clients. You can configure this limit by changing the `#define MAX_CLIENTS 5` macro found in `./server.c`. The server uses port 8080.
+This application is designed have a single server manage a maximum of 5 clients. You can configure this limit by changing the `MAX_CLIENTS` macro found in `./server.c`. The server uses port 8080.
 
 ### Setup
 If you are using a firewall like `ufw`, you must explicitly allow traffic on the server's port (default: 8080):
@@ -21,3 +21,6 @@ After the server program compiles, run the server executable
 ```
 On success, you'll see `STATUS: Server initiated` printed onto the terminal. Statements starting with `STATUS: ` are notifications from the server which can be errors or important updates.
 Messages from clients are shown with `Chat: `.
+
+### WARNING: Remove the port forward rule you have set after use!
+Every open port is a potential doorway for hackers or automated bots.
